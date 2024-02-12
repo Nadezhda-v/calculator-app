@@ -3,12 +3,10 @@ import { observer } from 'mobx-react';
 import style from './Output.module.scss';
 
 const Output = () => {
-  console.log('gh');
-
   return (
     <div className={style.outputContainer}>
-      <div className={style.previosOperand} />
-      <div className={style.currentOperand} />
+      <div className={style.previosOperand}>524.5*57</div>
+      <div className={style.currentOperand}>5257</div>
     </div>
   );
 };
