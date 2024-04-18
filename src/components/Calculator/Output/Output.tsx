@@ -1,12 +1,19 @@
 import { observer } from 'mobx-react';
 
 import style from './Output.module.scss';
+import { CalculatorService } from '../CalculatorService';
 
-const Output = () => {
+interface OutputProps {
+  service: CalculatorService;
+}
+
+const Output = ({ service }: OutputProps) => {
+  const { previousOperand, currentOperand } = service;
+
   return (
     <div className={style.outputContainer}>
-      <div className={style.previosOperand}>524.5*57</div>
-      <div className={style.currentOperand}>5257</div>
+      <div className={style.previousOperand}>{previousOperand}</div>
+      <div className={style.currentOperand}>{currentOperand}</div>
     </div>
   );
 };
