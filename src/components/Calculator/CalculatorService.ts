@@ -43,9 +43,9 @@ export class CalculatorService {
 
     if (
       this.previousOperand === '' ||
-      value === '.' ||
       this.lastInput.value.includes('.') ||
-      (this.lastInput.type === 'digitButton' && type === 'digitButton')
+      (this.lastInput.type === 'digitButton' &&
+        (type === 'digitButton' || value === '.'))
     ) {
       this.previousOperand += value;
     } else {
@@ -145,15 +145,15 @@ export class CalculatorService {
     switch (value) {
       case '=':
         if (!Number.isNaN(parseFloat(this.currentOperand))) {
-          this.previousOperand = this.currentOperand;
-          this.currentOperand = '';
+          this.setPreviousOperand(this.currentOperand);
+          this.setCurrentOperand('');
         }
 
         break;
 
       case 'AC':
-        this.previousOperand = '';
-        this.currentOperand = '';
+        this.setPreviousOperand('');
+        this.setCurrentOperand('');
         break;
 
       case 'clear':
@@ -162,6 +162,7 @@ export class CalculatorService {
 
       default:
         this.calculation(value.toString(), type);
+        break;
     }
   }
 }
