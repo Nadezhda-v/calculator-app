@@ -1,5 +1,4 @@
 import { observer } from 'mobx-react';
-import { v4 as uuid } from 'uuid';
 import { FC } from 'react';
 
 import style from './Keyboard.module.scss';
@@ -153,7 +152,7 @@ const Keyboard: FC<KeyboardProps> = ({ service }: KeyboardProps) => {
       <div className={style.keyboardGrid}>
         {keys.map((item) => (
           <button
-            key={uuid()}
+            key={item.value}
             className={`${style.button} ${
               item?.isCountSpan === 2 ? style.spanTwo : ''
             }
