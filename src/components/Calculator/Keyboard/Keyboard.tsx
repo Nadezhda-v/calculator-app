@@ -146,7 +146,7 @@ const keys: Key[] = [
   },
 ];
 
-const Keyboard: FC<KeyboardProps> = ({ service }: KeyboardProps) => {
+const Keyboard: FC<KeyboardProps> = ({ service }) => {
   return (
     <div className={style.keyboardContainer}>
       <div className={style.keyboardGrid}>

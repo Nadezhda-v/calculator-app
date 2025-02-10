@@ -3,13 +3,13 @@
   justify-content: center;
   padding: 45px;
   background-color: rgba(225, 225, 225, 0.3);
-  border-radius: 20px 20px 0 0; 
-}
+  border-radius: 20px 20px 0 0;
 
-.keyboardGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  .keyboardGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
 }
 
 .spanTwo {
@@ -34,12 +34,12 @@
     background: rgba(194, 151, 151, 0.9);
     filter: brightness(150%);
   }
-}
 
-.roundedButton {
-  background-color: #cfcfcf;
-}
+  .roundedButton {
+    background-color: #cfcfcf;
+  }
 
-.generalButton {
-  background: none;
+  .generalButton {
+    background: none;
+  }
 }

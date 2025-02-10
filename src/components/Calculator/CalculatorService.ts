@@ -8,7 +8,7 @@ export class CalculatorService {
       currentOperand: observable,
       setPreviousOperand: action,
       setCurrentOperand: action,
-      deleateDigit: action,
+      deleteDigit: action,
       calcResult: action,
       appendToCurrentOperand: action,
     });
@@ -34,6 +34,16 @@ export class CalculatorService {
     this.lastInput = { value, type };
   }
 
+  shouldAddSpace(value: string, type: string) {
+    return (
+      this.previousOperand === '' ||
+      value === '%' ||
+      this.lastInput.value.includes('.') ||
+      (this.lastInput.type === 'digitButton' &&
+        (type === 'digitButton' || value === '.'))
+    );
+  }
+
   appendToCurrentOperand(value: string, type: string) {
     if (this.lastInput.value.includes('.') && value === '.') return;
 
@@ -41,12 +51,7 @@ export class CalculatorService {
       this.setLastInput(value, type);
     }
 
-    const shouldAddSpace =
-      this.previousOperand === '' ||
-      value === '%' ||
-      this.lastInput.value.includes('.') ||
-      (this.lastInput.type === 'digitButton' &&
-        (type === 'digitButton' || value === '.'));
+    const shouldAddSpace = this.shouldAddSpace(value, type);
 
     this.previousOperand += shouldAddSpace ? value : ` ${value}`;
     const lastValue = this.previousOperand.split(' ').pop() || '';
@@ -61,14 +66,16 @@ export class CalculatorService {
     }
   }
 
-  deleateDigit() {
+  deleteDigit() {
     const prevOperand = this.previousOperand.slice(-2, -1);
     const count = prevOperand !== ' ' ? -1 : -2;
 
     this.previousOperand = this.previousOperand.slice(0, count);
-    this.lastInput.value = this.previousOperand.slice(-1);
+    const lastValue = this.previousOperand.slice(-1);
 
-    this.lastInput.type = Number.isNaN(parseFloat(this.lastInput.value))
+    this.lastInput.value = lastValue;
+
+    this.lastInput.type = Number.isNaN(parseFloat(lastValue))
       ? 'operationButton'
       : 'digitButton';
 
@@ -76,9 +83,7 @@ export class CalculatorService {
   }
 
   calcResult() {
-    // Разбиваем строку по пробелам
     const operands = this.previousOperand.split(' ');
-
     const isLastTwoOperator = this.isLastTwoOperators();
 
     /* Если меньше трех операндов или меньше 4 операндов и последние два значения
@@ -126,11 +131,9 @@ export class CalculatorService {
   }
 
   calculation(value: string, type: string) {
-    if (
-      this.previousOperand === '' &&
-      (value === '*' || value === '/' || value === '%')
-    )
-      return;
+    const operators = ['%', '*', '/'];
+
+    if (this.previousOperand === '' && operators.includes(value)) return;
 
     if (this.lastInput.type === 'operationButton') {
       if (this.lastInput.value === value) return;
@@ -176,7 +179,7 @@ export class CalculatorService {
         break;
 
       case 'clear':
-        this.deleateDigit();
+        this.deleteDigit();
         break;
 
       default:
