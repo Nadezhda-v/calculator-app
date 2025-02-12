@@ -20,8 +20,6 @@ export class CalculatorService {
 
   lastInput = { value: '', type: '' };
 
-  prevResult = '';
-
   setPreviousOperand(previousOperand: string) {
     this.previousOperand = previousOperand;
   }
@@ -34,16 +32,6 @@ export class CalculatorService {
     this.lastInput = { value, type };
   }
 
-  shouldAddSpace(value: string, type: string) {
-    return (
-      this.previousOperand === '' ||
-      value === '%' ||
-      this.lastInput.value.includes('.') ||
-      (this.lastInput.type === 'digitButton' &&
-        (type === 'digitButton' || value === '.'))
-    );
-  }
-
   appendToCurrentOperand(value: string, type: string) {
     if (this.lastInput.value.includes('.') && value === '.') return;
 
@@ -51,12 +39,8 @@ export class CalculatorService {
       this.setLastInput(value, type);
     }
 
-    const shouldAddSpace = this.shouldAddSpace(value, type);
-
-    this.previousOperand += shouldAddSpace ? value : ` ${value}`;
-    const lastValue = this.previousOperand.split(' ').pop() || '';
-
-    this.lastInput.value = lastValue;
+    this.setPreviousOperand(this.previousOperand + value);
+    const lastValue = this.previousOperand.split('').pop() || '';
 
     if (
       !this.lastInput.value.includes('%') &&
@@ -67,15 +51,14 @@ export class CalculatorService {
   }
 
   deleteDigit() {
-    const prevOperand = this.previousOperand.slice(-2, -1);
-    const count = prevOperand !== ' ' ? -1 : -2;
-
-    this.previousOperand = this.previousOperand.slice(0, count);
     const lastValue = this.previousOperand.slice(-1);
 
     this.lastInput.value = lastValue;
+    this.previousOperand = this.previousOperand.slice(0, -1);
 
-    this.lastInput.type = Number.isNaN(parseFloat(lastValue))
+    this.lastInput.type = Number.isNaN(
+      parseFloat(this.previousOperand.slice(-1)),
+    )
       ? 'operationButton'
       : 'digitButton';
 
@@ -83,31 +66,39 @@ export class CalculatorService {
   }
 
   calcResult() {
-    const operands = this.previousOperand.split(' ');
     const isLastTwoOperator = this.isLastTwoOperators();
+    const lastTwoValues = this.previousOperand.slice(-2);
 
-    /* Если меньше трех операндов или меньше 4 операндов и последние два значения
-    арифметические операторы, то currentOperand должен быть установлен в пустую строку */
-    if (operands.length < 3 || (operands.length < 4 && isLastTwoOperator)) {
+    if (
+      isLastTwoOperator &&
+      (this.lastInput.value !== '-' || lastTwoValues === '+-')
+    ) {
+      this.setPreviousOperand(
+        this.previousOperand.slice(0, -2) + this.lastInput.value,
+      );
+    }
+
+    if (this.previousOperand.length < 3) {
       this.currentOperand = '';
 
       return;
     }
 
-    // Если последнее значение оператор отображаем предыдущий результат вычисления
+    // Если последнее значение оператор, удаляем все операторы для корректного вычисления
     if (this.lastInput.type === 'operationButton') {
-      this.currentOperand = this.prevResult;
+      const cleanedOperand = this.previousOperand.replace(/[+\-*/.%]+$/, '');
+
+      this.currentOperand = math.evaluate(cleanedOperand).toString();
 
       return;
     }
 
-    // Поиск символа '/' в массиве operands
-    const operatorDivision = operands.indexOf('/');
+    const operatorDivision = this.previousOperand.split('').lastIndexOf('/');
 
-    // Проверяем, если оператор равен '/' и правый операнд равен нулю
+    // Проверяем, если есть в выражении оператор '/' и следующий за ним операнд равен нулю
     if (
       operatorDivision !== -1 &&
-      parseFloat(operands[operatorDivision + 1]) === 0
+      parseFloat(this.previousOperand[operatorDivision + 1]) === 0
     ) {
       this.currentOperand = 'На 0 делить нельзя';
 
@@ -116,44 +107,30 @@ export class CalculatorService {
 
     try {
       this.currentOperand = math.evaluate(this.previousOperand).toString();
-      this.prevResult = this.currentOperand;
     } catch (error) {
-      this.currentOperand = 'Ошибка';
+      this.currentOperand = 'Ошибка формата';
     }
   }
 
   // Проверка являются ли два последних значения арифметическими операторами
   isLastTwoOperators(): boolean {
     const operators = ['+', '-', '*', '/'];
-    const lastTwoValues = this.previousOperand.split(' ').slice(-2);
+    const lastTwoValues = this.previousOperand.slice(-2);
 
-    return lastTwoValues.every((value) => operators.includes(value));
+    if (lastTwoValues.length < 2) return false;
+
+    return lastTwoValues.split('').every((value) => operators.includes(value));
   }
 
   calculation(value: string, type: string) {
     const operators = ['%', '*', '/'];
 
-    if (this.previousOperand === '' && operators.includes(value)) return;
-
-    if (this.lastInput.type === 'operationButton') {
-      if (this.lastInput.value === value) return;
-
-      if (
-        type === 'operationButton' &&
-        value !== '-' &&
-        value !== '.' &&
-        !this.lastInput.value.includes('%')
-      ) {
-        const isLastTwoOperators = this.isLastTwoOperators();
-
-        if (isLastTwoOperators) {
-          this.setPreviousOperand(this.previousOperand.slice(0, -4));
-        } else {
-          this.setPreviousOperand(this.previousOperand.slice(0, -2));
-          this.lastInput.value = value;
-        }
-      }
-    }
+    if (
+      (this.previousOperand.length === 0 && operators.includes(value)) ||
+      (this.lastInput.type === 'operationButton' &&
+        this.lastInput.value === value)
+    )
+      return;
 
     if (type !== 'actionButton') {
       this.appendToCurrentOperand(value, type);

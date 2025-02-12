@@ -7,16 +7,16 @@
   padding: 12px 40px;
   min-height: 210px;
   overflow: hidden;
-}
 
-.previousOperand {
-  color: #637381;
-  font-size: 1.5rem;
-  padding-top: 100px;
-  text-wrap: nowrap;
-}
+  .previousOperand {
+    color: #637381;
+    font-size: 1.5rem;
+    padding-top: 100px;
+    text-wrap: nowrap;
+  }
 
-.currentOperand {
-  font-size: 2rem;
-  padding-top: 10px;
+  .currentOperand {
+    font-size: 2rem;
+    padding-top: 10px;
+  }
 }

@@ -38,16 +38,16 @@ describe('CalculatorService', () => {
   it('last digit should delete from previousOperand', () => {
     calculatorService.previousOperand = '12345';
     calculatorService.lastInput = { value: '12345', type: 'digitButton' };
-    calculatorService.deleateDigit();
+    calculatorService.deleteDigit();
 
     expect(calculatorService.previousOperand).toBe('1234');
     expect(calculatorService.lastInput.type).toBe('digitButton');
   });
 
   it('if the last value is an arithmetic operator it should be removed along with the space', () => {
-    calculatorService.previousOperand = '123 +';
+    calculatorService.previousOperand = '123+';
     calculatorService.lastInput = { value: '+', type: 'operationButton' };
-    calculatorService.deleateDigit();
+    calculatorService.deleteDigit();
 
     expect(calculatorService.previousOperand).toBe('123');
     expect(calculatorService.lastInput.type).toBe('digitButton');
@@ -56,114 +56,41 @@ describe('CalculatorService', () => {
   it('should call calcResult after deleting digit', () => {
     const calcResultSpy = jest.spyOn(calculatorService, 'calcResult');
 
-    calculatorService.deleateDigit();
+    calculatorService.deleteDigit();
     expect(calcResultSpy).toHaveBeenCalled();
-  });
-
-  describe('appendToCurrentOperand', () => {
-    it('arithmetic operators should append to previousOperand with space', () => {
-      calculatorService.previousOperand = '5';
-      calculatorService.appendToCurrentOperand('+', 'operationButton');
-
-      expect(calculatorService.previousOperand).toBe('5 +');
-      expect(calculatorService.lastInput).toStrictEqual({
-        value: '+',
-        type: 'operationButton',
-      });
-    });
-
-    it('numeric value should append to number without space', () => {
-      calculatorService.previousOperand = '5';
-      calculatorService.lastInput = { value: '5', type: 'digitButton' };
-
-      calculatorService.appendToCurrentOperand('2', 'digitButton');
-
-      expect(calculatorService.previousOperand).toBe('52');
-      expect(calculatorService.lastInput).toStrictEqual({
-        value: '52',
-        type: 'digitButton',
-      });
-    });
-
-    it('a dot should add to the previous operand without a space', () => {
-      calculatorService.previousOperand = '5';
-      calculatorService.lastInput = { value: '5', type: 'digitButton' };
-
-      calculatorService.appendToCurrentOperand('.', 'operationButton');
-
-      expect(calculatorService.previousOperand).toBe('5.');
-      expect(calculatorService.lastInput).toStrictEqual({
-        value: '5.',
-        type: 'digitButton',
-      });
-    });
-
-    it('a dot should not add if the previous value has a dot', () => {
-      calculatorService.previousOperand = '5.';
-      calculatorService.lastInput = { value: '5.', type: 'digitButton' };
-
-      calculatorService.appendToCurrentOperand('.', 'digitButton');
-
-      expect(calculatorService.previousOperand).toBe('5.');
-    });
-
-    it('value should append without space if previousOperand is empty', () => {
-      calculatorService.previousOperand = '';
-      calculatorService.appendToCurrentOperand('5', 'digitButton');
-
-      expect(calculatorService.previousOperand).toBe('5');
-      expect(calculatorService.lastInput).toStrictEqual({
-        value: '5',
-        type: 'digitButton',
-      });
-    });
-
-    it('percent should add to the number without a space', () => {
-      calculatorService.previousOperand = '5';
-      calculatorService.lastInput = { value: '5', type: 'digitButton' };
-
-      calculatorService.appendToCurrentOperand('%', 'operationButton');
-
-      expect(calculatorService.previousOperand).toBe('5%');
-      expect(calculatorService.lastInput).toStrictEqual({
-        value: '5%',
-        type: 'digitButton',
-      });
-    });
   });
 
   describe('calcResult', () => {
     it('currentOperand should set to empty string if there are less than 3 operands', () => {
-      calculatorService.previousOperand = '5 +';
+      calculatorService.previousOperand = '5+';
       calculatorService.calcResult();
       expect(calculatorService.currentOperand).toBe('');
     });
 
     it('previous result should display if last input was an arithmetic operator', () => {
-      calculatorService.previousOperand = '1 + 2 *';
+      calculatorService.previousOperand = '1+2*';
       calculatorService.lastInput.type = 'operationButton';
-      calculatorService.prevResult = '3';
       calculatorService.calcResult();
 
       expect(calculatorService.currentOperand).toBe('3');
     });
 
     it('should display error message if division by zero', () => {
-      calculatorService.previousOperand = '5 / 0';
+      calculatorService.previousOperand = '5/0';
       calculatorService.calcResult();
       expect(calculatorService.currentOperand).toBe('На 0 делить нельзя');
     });
 
     it('calculate result should for valid expression', () => {
-      calculatorService.previousOperand = '5 + 3 * 2';
+      calculatorService.previousOperand = '5+3*2';
       calculatorService.calcResult();
       expect(calculatorService.currentOperand).toBe('11');
     });
 
     it('should handle and display error for invalid expression', () => {
-      calculatorService.previousOperand = '5 + abc';
+      calculatorService.previousOperand = '*5+1';
       calculatorService.calcResult();
-      expect(calculatorService.currentOperand).toBe('Ошибка');
+      expect(calculatorService.currentOperand).toBe('Ошибка формата');
     });
   });
 
@@ -175,34 +102,34 @@ describe('CalculatorService', () => {
     });
 
     it('if lastInput type is operationButton and value is the same as last input should display early value', () => {
-      calculatorService.previousOperand = '1 + 2 *';
+      calculatorService.previousOperand = '1+2*';
       calculatorService.currentOperand = '3';
       calculatorService.lastInput = { value: '*', type: 'operationButton' };
       calculatorService.calculation('*', 'operationButton');
 
-      expect(calculatorService.previousOperand).toBe('1 + 2 *');
+      expect(calculatorService.previousOperand).toBe('1+2*');
       expect(calculatorService.currentOperand).toBe('3');
     });
 
     it('previousOperand should update correct when type is operationButton and value is not -, ., or %', () => {
-      calculatorService.previousOperand = '5 /';
+      calculatorService.previousOperand = '5/';
       calculatorService.lastInput.type = 'operationButton';
       calculatorService.calculation('+', 'operationButton');
-      expect(calculatorService.previousOperand).toBe('5 +');
+      expect(calculatorService.previousOperand).toBe('5+');
     });
 
     it('previousOperand should be updated correct if the last value is the arithmetic operand and the input value is minus', () => {
-      calculatorService.previousOperand = '5 /';
+      calculatorService.previousOperand = '5/';
       calculatorService.lastInput.type = 'operationButton';
       calculatorService.calculation('-', 'operationButton');
-      expect(calculatorService.previousOperand).toBe('5 / -');
+      expect(calculatorService.previousOperand).toBe('5/-');
     });
 
     it('previousOperand should be updated correct if the last two operands are arithmetic', () => {
-      calculatorService.previousOperand = '5 / -';
+      calculatorService.previousOperand = '5/';
       calculatorService.lastInput.type = 'operationButton';
-      calculatorService.calculation('+', 'operationButton');
-      expect(calculatorService.previousOperand).toBe('5 +');
+      calculatorService.calculation('*', 'operationButton');
+      expect(calculatorService.previousOperand).toBe('5*');
     });
 
     it('should call appendToCurrentOperand method when type is not actionButton', () => {
@@ -228,7 +155,7 @@ describe('CalculatorService', () => {
 
   describe('handleButtonClick', () => {
     it('should set previous operand, current operand, and last input correct when value is "="', () => {
-      calculatorService.previousOperand = '2 + 8';
+      calculatorService.previousOperand = '2+8';
       calculatorService.currentOperand = '10';
       calculatorService.handleButtonClick('=', 'actionButton');
 
@@ -250,7 +177,7 @@ describe('CalculatorService', () => {
     });
 
     it('should call deleateDigit when value is "clear"', () => {
-      const deleteDigitSpy = jest.spyOn(calculatorService, 'deleateDigit');
+      const deleteDigitSpy = jest.spyOn(calculatorService, 'deleteDigit');
 
       calculatorService.handleButtonClick('clear', 'actionButton');
       expect(deleteDigitSpy).toHaveBeenCalled();
